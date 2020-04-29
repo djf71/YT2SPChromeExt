@@ -1,7 +1,8 @@
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
    if (request.message === "clicked_browser_action"){    
     
-    createPlaylist()
+    
+    
 
    }
 })
@@ -46,6 +47,19 @@ function createPlaylist(){
     
 
 }
+
+function getOAthURL(){
+
+    const authendpoint = "https://accounts.spotify.com/authorize"
+    const clientId = "a9133a4606a74919aefcc1c43f11247e"
+    const redirectURI = "http://www.google.com"  //'${window.location.protocol}//${window.location.host}/'
+    let query = `client_id=${clientId}&redirect_uri=${redirectURI}&response_type=token`
+    
+     
+    return (`${authendpoint}?${query}`)
+
+}
+
 
 
 

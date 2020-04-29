@@ -16,7 +16,9 @@
     ],
 
 
-    "permissions" : ["tabs"],
+    "permissions" : ["tabs","http://*/*", "tabs", "webNavigation", "activeTab", "storage", "identity",
+        "declarativeContent", "https://accounts.spotify.com/*",  
+        "https://accounts.spotify.com/authorize/*"],
 
 
 
