@@ -1,18 +1,19 @@
+//Makes Sure Page is Loaded Before Executing Function
 document.addEventListener('DOMContentLoaded', function(){
+    
+    //Adds a Click Event Listener for Dropdown Button 
     document.getElementById('boom').addEventListener('click', 
     onclick, false)
     
+    //Function that executes on Click 
     function onclick(){
 
+        //Gets OAth Token from Spotify and 
         getOAthToken(function(token) {
-            makeReqeust(token);
+           hasYoutubePlaylist(token);
         });
 
         
-        
-
-
-
         chrome.tabs.query({currentWindow: true, active:true}, 
             
             function(tabs){
@@ -31,7 +32,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
 function getOAthToken(callback){
 
-        var client_id = "a9133a4606a74919aefcc1c43f11247e"
+    var client_id = "a9133a4606a74919aefcc1c43f11247e"
     var redirect_url = chrome.identity.getRedirectURL("spotify")
     var scopes = "playlist-read-private"
         
@@ -40,7 +41,7 @@ function getOAthToken(callback){
         interactive : true
     }, function (redirectURL){
         var token = redirectURL.substr(redirectURL.indexOf("#")+1).split("&")[0].split("=")[1]  
-        console.log(token)
+        
         callback(token)
     
         
@@ -52,7 +53,7 @@ function getOAthToken(callback){
 
 //testing what making the request looks like
 //will get a list of playlists 
-function makeReqeust(token){
+function hasYoutubePlaylist(token){
     
     fetch("https://api.spotify.com/v1/me/playlists",{
 
@@ -64,10 +65,16 @@ function makeReqeust(token){
              
 
     }).then(response => {
-       return response.json()
+        return response.json()
     }).then(response => {
-        title = response.
-        console.log(title)
+        allplaylists = response.items
+        
+        titles = allplaylists.map(function(holder){
+            return holder.name
+        })
+        
+       console.log(titles)
+
     }).catch(response => {
         console.log("Stupid Error")
     })
