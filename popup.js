@@ -40,7 +40,7 @@ function getOAthToken(callback){
     //Redirect URL per chrome launchWebAuthFlow function
     var redirect_url = chrome.identity.getRedirectURL("spotify")
     //Scope to allow reading private playlists
-    var scopes = "playlist-read-private"
+    var scopes = "playlist-read-private playlist-modify-private playlist-modify-public"
 
         
     //Launches spotify log in window 
@@ -64,52 +64,70 @@ function getOAthToken(callback){
 }
 
 //function to check if there is already a "From Youtube" playlist in the current user's account 
-function addSongToPlaylist(token){
+async function addSongToPlaylist(token){
     
-    fetch("https://api.spotify.com/v1/me/playlists",{
+    response = await fetch("https://api.spotify.com/v1/me/playlists",{
 
         headers:{
 
             'Authorization' : 'Bearer ' + token
             
         }   
-             
-
-    }).then(response => {
-        return response.json()
-    }).then(response => {
-        allplaylists = response.items
-        
-        titles = allplaylists.map(function(holder){
-            return holder.name
-        })
-        
-        //search for song/artist 
-
-        searchForTrack(token)
-
-        //check if there is a "From Youtube" playlist
-
-
-        //If there is not, create one 
-
-        //If there is
-        
         
 
     }).catch(response => {
         console.log("Error, playlist function undefined")
     })
 
+
+    response = await response.json()
+    allplaylists = response.items
+
+    titles = allplaylists.map(function(holder){
+        return holder.name
+    })
+    
+
+    //search for song/artist 
+
+    searchresponse = await searchForTrack(token)
+
+    searchresponse = await searchresponse.json()
+    foundartist = searchresponse.tracks.items[0].artists[0].name 
+    foundtrack = searchresponse.tracks.items[0].name 
+    foundURI = searchresponse.tracks.items[0].uri
+
+    //check if there is a "From Youtube" playlist
+
+    if(!titles.includes("Liked from Youtube")){
+        //If there is not, create one 
+        createPlaylist(token)
+        
+        //Then 
+    }else{
+
+        //If there is, add the song to the playlist
+        playlist_id = allplaylists[titles.indexOf("Liked from Youtube")].id
+        addTack(token,playlist_id,foundURI)
+        console.log("Added")
+
+    }
+
+    
+    
+
+    
+
+
 }
 
 //searches for song 
-function searchForTrack(token){
+async function searchForTrack(token){
 
     songname = "Danger Zone"
     artistname = "Kenny Loggins"
 
-    fetch(`https://api.spotify.com/v1/search?q=track:${songname}+artist:${artistname}&type=track`,{
+    return await fetch(`https://api.spotify.com/v1/search?q=track:${songname}+artist:${artistname}&type=track`,{
 
         headers: {
 
@@ -117,14 +135,50 @@ function searchForTrack(token){
 
         }
 
-    }).then(response => {
-        return response.json()
-    }).then(response =>{
-        console.log(response)
     }).catch(response => {
         console.log("Error, search undefined")
     })
 
     
+}
+
+async function createPlaylist(token){
+
+    await fetch("https://api.spotify.com/v1/users/dfox80/playlists",{
+
+        method : 'POST',
+
+        body : JSON.stringify({name : "Liked from Youtube"}),
+
+        headers:{
+
+            'Authorization' : 'Bearer ' + token,
+            'Content-Type' : 'application/json'
+
+        }
+
+    }).catch(response => {
+        console.log("Error, playlist could not be created")
+    })
+}
+
+async function addTack(token,playlist_id,track_uri){
+
+    await fetch(`https://api.spotify.com/v1/playlists/${playlist_id}/tracks`,{
+
+        method : 'POST',
+
+        body : JSON.stringify({uris:[track_uri]}),
+
+        headers:{
+
+            'Authorization' : 'Bearer ' + token, 
+            'Content-Type' : 'application/json'
+
+        }
+
+
+    })
+
 }
  
