@@ -66,22 +66,7 @@ function getOAthToken(callback){
 //function to check if there is already a "From Youtube" playlist in the current user's account 
 async function addSongToPlaylist(token){
     
-    response = await fetch("https://api.spotify.com/v1/me/playlists",{
-
-        headers:{
-
-            'Authorization' : 'Bearer ' + token
-            
-        }   
-        
-
-    }).catch(response => {
-        console.log("Error, playlist function undefined")
-    })
-
-
-    response = await response.json()
-    allplaylists = response.items
+    allplaylists = await displayUsersPlaylists(token)
 
     titles = allplaylists.map(function(holder){
         return holder.name
@@ -101,15 +86,26 @@ async function addSongToPlaylist(token){
 
     if(!titles.includes("Liked from Youtube")){
         //If there is not, create one 
-        createPlaylist(token)
+        await createPlaylist(token)
         
-        //Then 
+        //Then refetch users playlists
+        allplaylists = await displayUsersPlaylists(token)
+
+        titles = allplaylists.map(function(holder){
+            return holder.name
+        })
+
+        //Then add song to playlist
+        playlist_id = allplaylists[titles.indexOf("Liked from Youtube")].id
+        addTack(token,playlist_id,foundURI)
+
+
     }else{
 
         //If there is, add the song to the playlist
         playlist_id = allplaylists[titles.indexOf("Liked from Youtube")].id
         addTack(token,playlist_id,foundURI)
-        console.log("Added")
+        
 
     }
 
@@ -120,6 +116,33 @@ async function addSongToPlaylist(token){
 
 
 }
+
+
+async function displayUsersPlaylists(token){
+
+    response = await fetch("https://api.spotify.com/v1/me/playlists",{
+
+        headers:{
+
+            'Authorization' : 'Bearer ' + token
+            
+        }   
+        
+
+    }).catch(response => {
+        console.log("Error, playlist function undefined")
+    })
+
+
+    response = await response.json()
+    allplaylists = response.items
+
+    return allplaylists
+
+    
+}
+
+
 
 //searches for song 
 async function searchForTrack(token){
