@@ -1,30 +1,29 @@
 {
 
     "name":"YT2SP",
-    "version" : "1.0",
-    "manifest_version" : 2,
-    "background" : {
-        "scripts" : ["popup.js"]
-    }, 
+    "version" : "3.0",
+    "manifest_version" : 3,
+    "description": "Identify songs playing in Youtube and give user the option to quickly add song to their Spotify Liked Songs playlist",
+    
+    "permissions": ["tabs", "activeTab", "scripting", "storage"],
+    "host_permissions": ["https://www.youtube.com/*","https://accounts.spotify.com/*","https://accounts.spotify.com/authorize/*",
+                        "*://*.acrcloud.com/*"],
+    
+    "background": {
+        "service_worker": "background.js"
+      },
+   
+      "content_scripts": [
+        {
+          "matches": ["https://www.youtube.com/*"],
+          "js": ["content.js"]
+        }
+      ],
 
 
-    "content_scripts" : [
-            {
-            "matches" : ["https://www.youtube.com/*"], 
-            "js" : ["content.js"]
-            }
-    ],
-
-
-    "permissions" : ["tabs","http://*/*", "tabs", "webNavigation", "activeTab", "storage", "identity",
-        "declarativeContent", "https://accounts.spotify.com/*",  
-        "https://accounts.spotify.com/authorize/*"],
-
-
-
-    "browser_action" : {
-        "default_icon" : "logo.png",
-        "default_popup" : "popup.html"
-    }
+      "action": {
+        "default_popup": "popup.html",
+        "default_icon": "logo.png"
+      }
 
 }
