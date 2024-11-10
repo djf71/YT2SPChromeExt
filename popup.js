@@ -1,7 +1,9 @@
+import { spotifyPlaylistAdder } from "./spotifyPlaylistAdder.js";
+
 document.addEventListener('DOMContentLoaded', async () => {
     const songInfo = document.getElementById('songInfo');
     const likeButton = document.getElementById('likeButton');
-  
+    
     // Get the song title and artist from storage
     chrome.storage.local.get(['songTitle', 'songArtist'], (data) => {
       if (data.songTitle && data.songArtist) {
@@ -14,6 +16,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   
     likeButton.addEventListener('click', () => {
       // Logic to add song to "liked songs" (this may involve integrating with Spotify/YouTube Music API)
+      spotifyPlaylistAdder()
       alert("Added to your liked songs!");
     });
   });
