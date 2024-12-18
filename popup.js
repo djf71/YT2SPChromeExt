@@ -1,4 +1,4 @@
-import { spotifyPlaylistAdder } from "./spotifyPlaylistAdder.js";
+import { spotifyOAuth_URL_Gen } from "./spotifyOAuth_URL_Gen.js";
 
 document.addEventListener('DOMContentLoaded', async () => {
     const songInfo = document.getElementById('songInfo');
@@ -16,7 +16,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   
     likeButton.addEventListener('click', () => {
       // Logic to add song to "liked songs" (this may involve integrating with Spotify/YouTube Music API)
-      spotifyPlaylistAdder()
-      alert("Added to your liked songs!");
+      
+      spotifyOAuth_URL_Gen().then(authUrl=> {
+        chrome.runtime.sendMessage({ action: "auth", authUrl: authUrl });
+      }); 
+      
+      
     });
   });

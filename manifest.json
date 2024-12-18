@@ -5,7 +5,7 @@
     "manifest_version" : 3,
     "description": "Identify songs playing in Youtube and give user the option to quickly add song to their Spotify Liked Songs playlist",
     
-    "permissions": ["tabs", "activeTab", "scripting", "storage"],
+    "permissions": ["tabs", "activeTab", "scripting", "storage", "identity"],
     "host_permissions": ["https://www.youtube.com/*","https://accounts.spotify.com/*","https://accounts.spotify.com/authorize/*",
                         "*://*.acrcloud.com/*"],
     

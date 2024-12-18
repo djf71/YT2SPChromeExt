@@ -1,10 +1,11 @@
-import { spotifyOAuth } from './spotifyOAuth.js'
+import { spotifyOAuth_URL_Gen } from './spotifyOAuth_URL_Gen.js'
 
 export async function spotifyPlaylistAdder(){
 
     chrome.storage.local.get(['songTitle', 'songArtist', 'songSpotifyURL'], (data) =>{
         const trackId = data.songSpotifyURL
         const accessToken = spotifyOAuth()
+        return accessToken
 
         //console.log(accessToken)
 

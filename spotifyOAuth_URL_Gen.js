@@ -1,4 +1,4 @@
-export async function spotifyOAuth(){
+export async function spotifyOAuth_URL_Gen(){
     console.log("Authorizing")
     //Code Verifier Template from API Docs
     const generateRandomString = (length) => {
@@ -23,7 +23,7 @@ export async function spotifyOAuth(){
     }
 
     const clientId = 'a9133a4606a74919aefcc1c43f11247e';
-    const redirectUri = 'http://localhost:5500';
+    const redirectUri = 'https://alfgpeknminkdbnhddjfanekkfanfala.chromiumapp.org/spotify';
 
     //const scope = 'user-read-private user-read-email playlist-modify-private playlist-modify-public scope user-library-modify';
     const scope = 'user-library-modify';
@@ -45,9 +45,12 @@ export async function spotifyOAuth(){
     }
 
     authUrl.search = new URLSearchParams(params).toString();
-    console.log(authUrl.toString())
-    window.location.href = authUrl.toString();
+    
+    return authUrl.toString() 
+         
 
+
+    /*
     const urlParams = new URLSearchParams(window.location.search);
     let code = urlParams.get('code');
     
@@ -77,5 +80,6 @@ export async function spotifyOAuth(){
         console.log(response.access_token.json())
         return response.access_token.json()
     }
+    */
 
 }
