@@ -17,10 +17,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     likeButton.addEventListener('click', () => {
       // Logic to add song to "liked songs" (this may involve integrating with Spotify/YouTube Music API)
       
+      /*
       spotifyOAuth_URL_Gen().then(authUrl=> {
         chrome.runtime.sendMessage({ action: "auth", authUrl: authUrl });
       }); 
-      
+      */
+
+      chrome.runtime.sendMessage({ action: "auth"});
       
     });
   });

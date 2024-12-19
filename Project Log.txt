@@ -1,0 +1,20 @@
+12/18: 
+    - Have OAuth 2.0 firt part working. This gives an initial access code which can be used to get an access token
+    - Currently the flow is the following: 
+        1) popup.js calls the spotifyOAuth_URL_Gen.js function
+            - This function is where information like clientID, redirectURI, scope, authURL, codeVerifier, ect. are currently assigned/stored
+            - This returns the authorization URL to popup.js 
+        2) popup.js sends the authorization URL to background.js in a message
+        3) background.js calls chromeWebAuthFlow which starts the OAuth 2.0 process
+        4) background.js then gets the access code from the auth flow 
+
+    - I need to use this access code in a POST request to the Spotify API to get an access token 
+        - This POST request needs the information that is stored in the spotifyOAuth_URL_Gen.js file
+        - I probably need to find a new place for this information so I dont have to pass it all over the place
+
+    TO DOs: 
+        X Put information in background.js and move all the logic of spotifyOAuth_URL_Gen.js into functions in backgorund.js
+            X See if I can do this without causing issues
+        
+        - Need to now create function to get access token
+        
