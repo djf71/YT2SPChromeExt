@@ -40,7 +40,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
               const songTitle = resp.data[0].name;
               const songArtist = resp.data[0].artists[0].name;
               const songSpotifyURL = resp.data[0].external_metadata.spotify[0].id
-              console.log(`Identified song: ${songTitle} by ${songArtist}`);
+              console.log(`#1: Identified song: ${songTitle} by ${songArtist}`);
   
           chrome.storage.local.set({ songTitle, songArtist, songSpotifyURL });
           chrome.action.openPopup();  // Show popup when song is identified
@@ -55,21 +55,24 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 
     generateAuthURL().then(auth_url=>{
 
-      generateAccessCode(auth_url)
-      
-    
-      chrome.storage.local.get(['ACCESS_CODE','CODE_VERIFIER'], (data) => {
-        const accessCode = data.ACCESS_CODE;
-        const codeVer = data.CODE_VERIFIER;
+      generateAccessCode(auth_url).then(acc_code=>{
 
-        console.log("Code Verifier Passed to Function:", codeVer)
+        
+        chrome.storage.local.get(['ACCESS_CODE','CODE_VERIFIER'], (data) => {
+
+          const accessCode = data.ACCESS_CODE;
+          const codeVer = data.CODE_VERIFIER;
   
-        generateAccessToken(accessCode,codeVer)
-      
-        // Use accessCode here
-      });
+          console.log("#6: Code Verifier Passed to Function:", codeVer)
+          console.log("#7: Code Returned:",accessCode)
     
-    
+          generateAccessToken(accessCode,codeVer)
+        
+          // Use accessCode here
+        });
+
+      })
+       
     })
 
     
@@ -113,10 +116,13 @@ async function generateSpotifyCodeChallenge(){
 
   //Base64encode template from API Docs
   const base64encode = (input) => {
+    
     return btoa(String.fromCharCode(...new Uint8Array(input)))
     .replace(/=/g, '')
     .replace(/\+/g, '-')
     .replace(/\//g, '_');
+    
+
   }
 
   //Conversion to SHA256 Template from API Docs
@@ -128,13 +134,13 @@ async function generateSpotifyCodeChallenge(){
 
     //Generate a code_verifier
     const CODE_VERIFIER = generateRandomString(64)
-    console.log("Code Verifier OG:", CODE_VERIFIER)
+    console.log("#2: Code Verifier OG:", CODE_VERIFIER)
 
     //Generate a code challenge
     const hashBuffer = await sha256(CODE_VERIFIER)
     const CODE_CHALLENGE = base64encode(hashBuffer)
 
-    console.log("Code Challenge:", CODE_CHALLENGE)
+    console.log("#3: Code Challenge:", CODE_CHALLENGE)
     
 
     chrome.storage.local.set({CODE_VERIFIER,CODE_CHALLENGE})
@@ -161,31 +167,41 @@ async function generateAuthURL(){
 
   authUrl.search = new URLSearchParams(params).toString();
 
+  console.log("#4: Completed Auth URL Function")
+
   return authUrl.toString() 
 }
 
 async function generateAccessCode(a_url){
-  
-  chrome.identity.launchWebAuthFlow({
-    url: a_url, 
-    interactive: true
-  }).then((redirectUrl) => {
-    if (chrome.runtime.lastError || !redirectUrl) {
-      console.error(chrome.runtime.lastError);
-      return;
-    }
-    
-    // Parse the token from the redirect URL
-    const urlParams = new URLSearchParams(new URL(redirectUrl).search);
 
-    const code = urlParams.get('code');
+  return new Promise((resolve,reject)=>{
     
-    if(code){
-      const ACCESS_CODE = code
-      chrome.storage.local.set({ACCESS_CODE})
-    }
-  } 
-)
+    chrome.identity.launchWebAuthFlow({
+      url: a_url, 
+      interactive: true
+    }).then((redirectUrl) => {
+      if (chrome.runtime.lastError || !redirectUrl) {
+        console.error(chrome.runtime.lastError);
+        reject(chrome.runtime.lastError);
+        return;
+      }
+      
+      // Parse the token from the redirect URL
+      const urlParams = new URLSearchParams(new URL(redirectUrl).search);
+      const code = urlParams.get('code');
+      
+      if(code){
+        chrome.storage.local.set({ACCESS_CODE:code})
+        console.log("#5: Access Code:", code)
+        resolve(code)
+      }else{
+        reject("No code found in the redirect URL");
+      }
+    } 
+  )
+  }
+  )
+  
 
 }
 
@@ -194,7 +210,7 @@ async function generateAccessToken(a_code,c_ver){
 
   const TOKEN_URL = 'https://accounts.spotify.com/api/token'
 
-  console.log("Code Verifier Used in Function:",c_ver)
+  console.log("#8: Code Verifier Used in Function:",c_ver)
  
   const payload = {
     method: 'POST',
