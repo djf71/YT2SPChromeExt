@@ -16,5 +16,13 @@
         X Put information in background.js and move all the logic of spotifyOAuth_URL_Gen.js into functions in backgorund.js
             X See if I can do this without causing issues
         
-        - Need to now create function to get access token
+        X Need to now create function to get access token
+            - Need to eventually clean this up so it is not saving when it doesnt need to and is 
+                asynced correctly
+
+        - Need to create function to get user's playlists
+        
+        - Need to create a function to add song to user playlist 
+        - Need to add drop down functionaltiy so user can choose which playlist to add song to 
+        - Need to add functionality if song is not found or detected
         
