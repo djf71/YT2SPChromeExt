@@ -57,7 +57,6 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 
       generateAccessCode(auth_url).then(acc_code=>{
 
-        
         chrome.storage.local.get(['ACCESS_CODE','CODE_VERIFIER'], (data) => {
 
           const accessCode = data.ACCESS_CODE;
@@ -66,9 +65,12 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
           console.log("#6: Code Verifier Passed to Function:", codeVer)
           console.log("#7: Code Returned:",accessCode)
     
-          generateAccessToken(accessCode,codeVer)
-        
-          // Use accessCode here
+          const a_token = generateAccessToken(accessCode,codeVer).then(a_token=>{
+
+            console.log("Access Token:", a_token)
+            console.log("Stored Access Token:", chrome.storage.local.get(['ACCESS_TOKEN']))
+          })
+          
         });
 
       })
@@ -77,7 +79,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 
     
 
-    //generateAccessToken();
+    
     
 
   }
@@ -154,12 +156,13 @@ async function generateAuthURL(){
   
   const test  = await generateSpotifyCodeChallenge()
 
+
   const params =  {
     response_type: 'code',
     client_id: CLINENT_ID,
     SCOPE,
     code_challenge_method: 'S256',
-    code_challenge: chrome.storage.local.get(['CODE_CHALLENGE']),
+    code_challenge: test.CODE_CHALLENGE,
     redirect_uri: REDIRECT_URI,
   }
 
@@ -167,7 +170,7 @@ async function generateAuthURL(){
 
   authUrl.search = new URLSearchParams(params).toString();
 
-  console.log("#4: Completed Auth URL Function")
+  console.log("#4: Completed Auth URL Function:", test.CODE_CHALLENGE)
 
   return authUrl.toString() 
 }
@@ -234,4 +237,5 @@ async function generateAccessToken(a_code,c_ver){
 
 
   chrome.storage.local.set({ACCESS_TOKEN});
+  return ACCESS_TOKEN
 }
