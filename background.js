@@ -1,6 +1,6 @@
 const CLINENT_ID = 'a9133a4606a74919aefcc1c43f11247e';
 const REDIRECT_URI = 'https://alfgpeknminkdbnhddjfanekkfanfala.chromiumapp.org/spotify';
-const SCOPE = 'user-library-modify';
+const SCOPE = 'user-library-modify user-read-private';
 const AUTH_URL = new URL("https://accounts.spotify.com/authorize");
 
 
@@ -55,20 +55,27 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 
     generateAuthURL().then(auth_url=>{
 
+
       generateAccessCode(auth_url).then(acc_code=>{
 
         chrome.storage.local.get(['ACCESS_CODE','CODE_VERIFIER'], (data) => {
 
           const accessCode = data.ACCESS_CODE;
           const codeVer = data.CODE_VERIFIER;
-  
-          console.log("#6: Code Verifier Passed to Function:", codeVer)
-          console.log("#7: Code Returned:",accessCode)
     
-          const a_token = generateAccessToken(accessCode,codeVer).then(a_token=>{
+          generateAccessToken(accessCode,codeVer).then(a_token=>{
 
-            console.log("Access Token:", a_token)
-            console.log("Stored Access Token:", chrome.storage.local.get(['ACCESS_TOKEN']))
+            //console.log(chrome.storage.local.get(['songSpotifyURL']))
+
+            chrome.storage.local.get(['songSpotifyURL']).then(trackID => {
+
+              addToLikedSongs(a_token,trackID.songSpotifyURL)
+
+            })
+
+            
+
+
           })
           
         });
@@ -78,7 +85,6 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
     })
 
     
-
     
     
 
@@ -136,14 +142,10 @@ async function generateSpotifyCodeChallenge(){
 
     //Generate a code_verifier
     const CODE_VERIFIER = generateRandomString(64)
-    console.log("#2: Code Verifier OG:", CODE_VERIFIER)
 
     //Generate a code challenge
     const hashBuffer = await sha256(CODE_VERIFIER)
     const CODE_CHALLENGE = base64encode(hashBuffer)
-
-    console.log("#3: Code Challenge:", CODE_CHALLENGE)
-    
 
     chrome.storage.local.set({CODE_VERIFIER,CODE_CHALLENGE})
 
@@ -160,7 +162,7 @@ async function generateAuthURL(){
   const params =  {
     response_type: 'code',
     client_id: CLINENT_ID,
-    SCOPE,
+    scope: SCOPE,
     code_challenge_method: 'S256',
     code_challenge: test.CODE_CHALLENGE,
     redirect_uri: REDIRECT_URI,
@@ -169,8 +171,6 @@ async function generateAuthURL(){
   const authUrl = AUTH_URL
 
   authUrl.search = new URLSearchParams(params).toString();
-
-  console.log("#4: Completed Auth URL Function:", test.CODE_CHALLENGE)
 
   return authUrl.toString() 
 }
@@ -184,7 +184,6 @@ async function generateAccessCode(a_url){
       interactive: true
     }).then((redirectUrl) => {
       if (chrome.runtime.lastError || !redirectUrl) {
-        console.error(chrome.runtime.lastError);
         reject(chrome.runtime.lastError);
         return;
       }
@@ -195,7 +194,6 @@ async function generateAccessCode(a_url){
       
       if(code){
         chrome.storage.local.set({ACCESS_CODE:code})
-        console.log("#5: Access Code:", code)
         resolve(code)
       }else{
         reject("No code found in the redirect URL");
@@ -212,8 +210,6 @@ async function generateAccessToken(a_code,c_ver){
   // stored in the previous step
 
   const TOKEN_URL = 'https://accounts.spotify.com/api/token'
-
-  console.log("#8: Code Verifier Used in Function:",c_ver)
  
   const payload = {
     method: 'POST',
@@ -238,4 +234,50 @@ async function generateAccessToken(a_code,c_ver){
 
   chrome.storage.local.set({ACCESS_TOKEN});
   return ACCESS_TOKEN
+}
+
+async function getUserPlaylists(auth_token){
+  
+  const user_playlist_URL = "https://api.spotify.com/v1/me/playlists"
+
+  const payload = {
+
+    method: 'GET', 
+    headers: {
+      'Authorization' : `Bearer ${auth_token}`, 
+      'Content-Type' : 'application/json'
+    }
+  }
+
+  const body = await fetch(user_playlist_URL,payload)
+
+  const response = await body.json()
+
+  const playlists = resp => resp.items.map(item => ({name: item.name, id: item.id})) || []
+
+  return playlists(response)
+
+}
+
+async function addToLikedSongs(auth_token,trackID){
+
+  const tracks_playlist_url = "https://api.spotify.com/v1/me/tracks"
+
+  const payload = {
+
+    method: 'PUT', 
+    headers:{
+      'Authorization' : `Bearer ${auth_token}`,
+      'Content-Type' : 'application/json'
+    },
+    body: JSON.stringify({
+      ids: [trackID]
+    })
+  }
+
+  const response = await fetch(tracks_playlist_url,payload)
+
+  console.log("Song Added")
+
+
 }

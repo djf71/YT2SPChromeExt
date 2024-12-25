@@ -20,9 +20,11 @@
             - Need to eventually clean this up so it is not saving when it doesnt need to and is 
                 asynced correctly
 
-        - Need to create function to get user's playlists
+        X Need to create function to get user's playlists
         
-        - Need to create a function to add song to user playlist 
+        X Need to create a function to add song to user playlist 
+
+        - Need to have it refresh and start again after going to a different page
         - Need to add drop down functionaltiy so user can choose which playlist to add song to 
         - Need to add functionality if song is not found or detected
         
