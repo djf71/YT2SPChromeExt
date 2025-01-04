@@ -2,7 +2,7 @@ const CLINENT_ID = 'a9133a4606a74919aefcc1c43f11247e';
 const REDIRECT_URI = 'https://alfgpeknminkdbnhddjfanekkfanfala.chromiumapp.org/spotify';
 const SCOPE = 'user-library-modify user-read-private';
 const AUTH_URL = new URL("https://accounts.spotify.com/authorize");
-
+let SONGIDd = false
 
 chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 
@@ -10,6 +10,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
   if (message.action === "identifySong") {
     
       // Store config access keys
+      
       
       //*_____________________________________________________________________________*
       // *WOULD NEED TO BE UPDATED IF NEW LOGIN OR PROJECT WITHIN OLD LOGIN IS CREATED*
@@ -42,14 +43,20 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
               const songSpotifyURL = resp.data[0].external_metadata.spotify[0].id
               console.log(`#1: Identified song: ${songTitle} by ${songArtist}`);
   
-          chrome.storage.local.set({ songTitle, songArtist, songSpotifyURL });
+          SONGIDd = true
+          chrome.storage.local.set({ songTitle, songArtist, songSpotifyURL, SONGIDd});
           chrome.action.openPopup();  // Show popup when song is identified
           } else {
-          console.error("Song identification failed.");
+          SONGIDd = false
+          chrome.storage.local.set({SONGIDd});
+          console.log("Unable to Identify Song");
           }
 
           }catch (error) {
-            console.error("Error identifying song:", error);
+            //console.error("Error identifying song:", error);
+            SONGIDd = false
+            chrome.storage.local.set({SONGIDd});
+            console.log("Error Identifying Song")
             }
   }else if(message.action === 'auth'){
 

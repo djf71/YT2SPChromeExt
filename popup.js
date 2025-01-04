@@ -5,12 +5,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     const likeButton = document.getElementById('likeButton');
     
     // Get the song title and artist from storage
-    chrome.storage.local.get(['songTitle', 'songArtist'], (data) => {
-      if (data.songTitle && data.songArtist) {
+    chrome.storage.local.get(['songTitle', 'songArtist', 'SONGIDd'], (data) => {
+      if (data.SONGIDd) {
         songInfo.textContent = `🎶 ${data.songTitle} - ${data.songArtist}`;
       } else {
         songInfo.textContent = "No song detected.";
         likeButton.disabled = true;
+        //likeButton.style.visibility = "hidden";
       }
     });
   
