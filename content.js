@@ -1,5 +1,6 @@
 // Check to see if there is a video in the webpage
 
+/*
 function checkForVideo(){
 
   const video = document.querySelector('video');
@@ -11,13 +12,19 @@ function checkForVideo(){
     //});
   };
 }
+*/
+
+let reload_check = "init"
 
 document.addEventListener("play", (event) => {
-  if (event.target.tagName === "VIDEO") {
-    const videoUrl = event.target.currentSrc || document.location.href;
+  if (event.target.tagName === "VIDEO" && reload_check != window.location.href) {
+    reload_check = window.location.href
     chrome.runtime.sendMessage({ action: "identifySong", videoUrl: window.location.href });
   }
-}, true); // Use the capturing phase to ensure we catch play events
+}, {capture:true}); // Use the capturing phase to ensure we catch play events
+
+
+
 
 /*
 // Listen for the custom-navigation event

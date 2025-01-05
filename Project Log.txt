@@ -24,7 +24,8 @@
         
         X Need to create a function to add song to user playlist 
 
-        - Need to have it refresh and start again after going to a different page
+        X Need to have it refresh and start again after going to a different page
         - Need to add drop down functionaltiy so user can choose which playlist to add song to 
-        - Need to add functionality if song is not found or detected
+        X Need to add functionality if song is not found or detected
+            - Need to clean this up to differentiate between Song Not Found and Song Not Detected
         
