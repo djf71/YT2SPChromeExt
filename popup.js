@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       }); 
       */
 
-      chrome.runtime.sendMessage({ action: "auth"});
-      
+      //chrome.runtime.sendMessage({ action: "auth"});
+      chrome.runtime.sendMessage({action: "add_song"})
     });
   });

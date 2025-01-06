@@ -3,6 +3,7 @@ const REDIRECT_URI = 'https://alfgpeknminkdbnhddjfanekkfanfala.chromiumapp.org/s
 const SCOPE = 'user-library-modify user-read-private';
 const AUTH_URL = new URL("https://accounts.spotify.com/authorize");
 let SONGIDd = false
+let authed = false
 
 chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 
@@ -60,40 +61,21 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
             }
   }else if(message.action === 'auth'){
 
-    generateAuthURL().then(auth_url=>{
+    if (!authed){
+      fullAuthRequestAndAdd()
+      authed = true
+    } 
 
+  }else if(message.action === 'add_song'){
 
-      generateAccessCode(auth_url).then(acc_code=>{
-
-        chrome.storage.local.get(['ACCESS_CODE','CODE_VERIFIER'], (data) => {
-
-          const accessCode = data.ACCESS_CODE;
-          const codeVer = data.CODE_VERIFIER;
+    const data = chrome.storage.local.get(['ACCESS_TOKEN','REFRESH_TOKEN','EXPIRE_IN','songSpotifyURL'])
     
-          generateAccessToken(accessCode,codeVer).then(a_token=>{
-
-            //console.log(chrome.storage.local.get(['songSpotifyURL']))
-
-            chrome.storage.local.get(['songSpotifyURL']).then(trackID => {
-
-              addToLikedSongs(a_token,trackID.songSpotifyURL)
-
-            })
-
-            
-
-
-          })
-          
-        });
-
-      })
-       
-    })
-
-    
-    
-    
+    if (!authed){
+      fullAuthRequestAndAdd()
+      authed = true
+    }else{
+      addToLikedSongs(data.ACCESS_TOKEN,data.songSpotifyURL)
+    }
 
   }
 
@@ -159,7 +141,34 @@ async function generateSpotifyCodeChallenge(){
     return {CODE_VERIFIER,CODE_CHALLENGE}
 }
 
+async function fullAuthRequestAndAdd(){
+  generateAuthURL().then(auth_url=>{
 
+
+    generateAccessCode(auth_url).then(acc_code=>{
+
+      chrome.storage.local.get(['ACCESS_CODE','CODE_VERIFIER'], (data) => {
+
+        const accessCode = data.ACCESS_CODE;
+        const codeVer = data.CODE_VERIFIER;
+  
+        generateAccessToken(accessCode,codeVer).then(a_token=>{
+
+          //console.log(chrome.storage.local.get(['songSpotifyURL']))
+
+          chrome.storage.local.get(['songSpotifyURL']).then(trackID => {
+
+            addToLikedSongs(a_token,trackID.songSpotifyURL)
+
+          })
+        })
+        
+      });
+
+    })
+     
+  })
+}
 
 async function generateAuthURL(){
   
@@ -237,9 +246,12 @@ async function generateAccessToken(a_code,c_ver){
   
   const response =await body.json();
   const ACCESS_TOKEN = response.access_token
+  const REFRESH_TOKEN = response.refresh_token
+  const EXPIRES_IN = response.expires_in
 
 
-  chrome.storage.local.set({ACCESS_TOKEN});
+  chrome.storage.local.set({ACCESS_TOKEN,REFRESH_TOKEN,EXPIRES_IN});
+
   return ACCESS_TOKEN
 }
 
@@ -288,3 +300,33 @@ async function addToLikedSongs(auth_token,trackID){
 
 
 }
+
+async function refreshToken(){
+
+  const REFRESH_URL = 'https://accounts.spotify.com/api/token'
+  const refresh_t = chrome.storage.local.get('REFRESH_TOKEN')
+
+  const payload = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: new URLSearchParams({
+      client_id: CLINENT_ID,
+      grant_type: 'refresh_token',
+      refresh_token: refresh_t,
+    }),
+  }
+
+  const body = await fetch(REFRESH_URL,payload)
+
+  const response = await body.json()
+
+  const ACCESS_TOKEN = response.access_token
+  const REFRESH_TOKEN = response.refresh_token
+  const EXPIRES_IN = response.expires_in
+
+  chrome.storage.local.set({ACCESS_TOKEN,REFRESH_TOKEN,EXPIRES_IN})
+
+  }
+
